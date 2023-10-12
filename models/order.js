@@ -1,71 +1,67 @@
-const { ObjectID } = require('mongodb');
+const { ObjectId } = require('mongodb');
 const connectToDatabase = require('../database');
 
 class Order {
-  constructor(buyerId, sellerId, products) {
-    this.buyerId = new ObjectID(buyerId); // This references the user _id
-    this.sellerId = new ObjectID(sellerId); // This references the user _id
+  constructor(buyerId, products) {
+    this.buyerId = new ObjectId(buyerId);
     this.products = products.map((product) => ({
-      productId: new ObjectID(product.productId),
+      productId: new ObjectId(product.productId),
       quantity: product.quantity,
+      sellerId: new ObjectId(product.sellerId),
     }));
     this.orderDate = new Date();
     this.confirmed = false;
-    // Add more fields as needed
   }
 
   async save() {
     const db = await connectToDatabase();
     const orders = db.collection('orders');
-
-    const result = await orders.insertOne(this);
-
-    return result.ops[0];
+  
+    const insertionResult = await orders.insertOne(this);
+  
+    if (insertionResult.acknowledged) {
+      // The insertion was acknowledged, so we find the order by its ID
+      const insertedOrder = await orders.findOne({ _id: insertionResult.insertedId });
+      return insertedOrder;
+    } else {
+      throw new Error('Order insertion failed');
+    }
   }
 
   static async findOrderById(orderId) {
     const db = await connectToDatabase();
     const orders = db.collection('orders');
 
-    const order = await orders.findOne({ _id: new ObjectID(orderId) });
+    const order = await orders.findOne({ _id: new ObjectId(orderId) });
     return order;
   }
 
-  // Add more query methods as needed
-}
-
-module.exports = Order;
-const { ObjectID } = require('mongodb');
-const connectToDatabase = require('../database');
-
-class Order {
-  constructor(buyerId, sellerId, products) {
-    this.buyerId = new ObjectID(buyerId); // This references the user _id
-    this.sellerId = new ObjectID(sellerId); // This references the user _id
-    this.products = products.map((product) => ({
-      productId: new ObjectID(product.productId),
-      quantity: product.quantity,
-    }));
-    this.orderDate = new Date();
-    this.confirmed = false;
-    // Add more fields as needed
-  }
-
-  async save() {
+  static async updateOrder(orderId, updatedData) {
     const db = await connectToDatabase();
     const orders = db.collection('orders');
 
-    const result = await orders.insertOne(this);
+    const result = await orders.updateOne(
+      { _id: new ObjectId(orderId) },
+      { $set: updatedData }
+    );
 
-    return result.ops[0];
+    return result.modifiedCount;
   }
 
-  static async findOrderById(orderId) {
+  static async deleteOrder(orderId) {
     const db = await connectToDatabase();
     const orders = db.collection('orders');
 
-    const order = await orders.findOne({ _id: new ObjectID(orderId) });
-    return order;
+    const result = await orders.deleteOne({ _id: new ObjectId(orderId) });
+    return result.deletedCount;
+  }
+
+  static async findAllOrders() {
+    const db = await connectToDatabase();
+    const orders = db.collection('orders');
+
+    const allOrders = await orders.find().toArray();
+    return allOrders;
   }
 
   // Add more query methods as needed

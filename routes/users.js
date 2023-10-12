@@ -4,8 +4,8 @@ const User = require('../models/user'); // Import the User model
 
 // Create a new user
 router.post('/users', async (req, res) => {
-  const { email, category, username } = req.body;
-  const user = new User( email, category, username);
+  const { email, category, username, password } = req.body;
+  const user = new User( email, category, username, password);
 
   try {
     const newUser = await user.save();

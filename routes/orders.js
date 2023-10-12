@@ -1,22 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const Order = require('../models/order'); // Import the Order model
+const Order = require('../models/order');
 
 // Create a new order
-router.post('/orders', async (req, res) => {
-  const { buyerId, sellerId, products } = req.body;
-  const order = new Order(buyerId, sellerId, products);
+router.post('/new', async (req, res) => {
+  const { buyerId, products } = req.body;
+  const order = new Order(buyerId, products);
 
   try {
     const newOrder = await order.save();
     res.status(201).json(newOrder);
   } catch (error) {
-    res.status(500).json({ error: 'Error creating the order' });
+    res.status(500).json({ error: error.message });
   }
 });
 
 // Get an order by ID
-router.get('/orders/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
   const orderId = req.params.id;
 
   try {
@@ -31,6 +31,47 @@ router.get('/orders/:id', async (req, res) => {
   }
 });
 
-// Add more routes for updating and deleting orders as needed
+// Update an order
+router.put('/:id', async (req, res) => {
+  const orderId = req.params.id;
+  const updatedData = req.body;
+
+  try {
+    const result = await Order.updateOrder(orderId, updatedData);
+    if (result) {
+      res.status(200).json({ message: 'Order updated successfully' });
+    } else {
+      res.status(404).json({ error: 'Order not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating the order' });
+  }
+});
+
+// Delete an order
+router.delete('/:id', async (req, res) => {
+  const orderId = req.params.id;
+
+  try {
+    const result = await Order.deleteOrder(orderId);
+    if (result) {
+      res.status(200).json({ message: 'Order deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Order not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting the order' });
+  }
+});
+
+// Get all orders
+router.get('/all', async (req, res) => {
+  try {
+    const allOrders = await Order.findAllOrders();
+    res.json(allOrders);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching all orders' });
+  }
+});
 
 module.exports = router;

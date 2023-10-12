@@ -33,11 +33,11 @@ app.get('/', (req, res) => {
 
 app.post('/signup', async (req, res) => {
   try {
-    const { username, email, category, password } = req.body;
+    const { email, username, password, category} = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create a new user
-    const newUser = new User(username, email, category, hashedPassword);
+    const newUser = new User( email, username, hashedPassword, category);
 
     await newUser.save();
 
@@ -67,7 +67,7 @@ app.post('/signin', async (req, res) => {
 
     if (passwordIsValid) {
 
-        // Create a JWT token
+      // Create a JWT token
       const token = jwt.sign(
         {
           _id: user._id,
@@ -94,6 +94,10 @@ app.post('/signin', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// Order model and routes (order.js)
+const orderRoutes = require('./routes/orders');
+app.use('/orders', orderRoutes);
 
 // WebSocket handling
 io.on('connection', (socket) => {

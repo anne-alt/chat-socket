@@ -2,9 +2,10 @@ const { ObjectID } = require('mongodb');
 const connectToDatabase = require('../database');
 
 class User {
-  constructor(name, email, category, username) {
+  constructor( email, username, password, category) {
     this.email = email;
     this.username = username;
+    this.password = password;
     this.category = category; // 'buyer' or 'seller'
     // Add more fields as needed
   }
