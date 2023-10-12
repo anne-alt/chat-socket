@@ -4,9 +4,7 @@ const connectToDatabase = require('./database');
 const User = require('./models/user');
 const Product = require('./models/product');
 
-// Function to generate random data for users and products
 const generateRandomData = async () => {
-  // Connect to the database
   const db = await connectToDatabase();
   const users = db.collection('users');
   const products = db.collection('products');
@@ -42,9 +40,7 @@ const generateRandomData = async () => {
 
   console.log('Seed data generated successfully.');
 
-  // Close the database connection
   db.close();
 };
 
-// Run the data generation function
 generateRandomData();

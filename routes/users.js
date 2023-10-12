@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/user'); // Import the User model
+const User = require('../models/user'); 
 
 // Create a new user
 router.post('/users', async (req, res) => {
@@ -31,6 +31,5 @@ router.get('/users/:id', async (req, res) => {
   }
 });
 
-// Add more routes for updating and deleting users as needed
 
 module.exports = router;

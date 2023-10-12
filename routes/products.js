@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Product = require('../models/product'); // Import the Product model
+const Product = require('../models/product'); 
 
 // Create a new product
 router.post('/products', async (req, res) => {
@@ -31,6 +31,5 @@ router.get('/products/:id', async (req, res) => {
   }
 });
 
-// Add more routes for updating and deleting products as needed
 
 module.exports = router;

@@ -7,7 +7,6 @@ class User {
     this.username = username;
     this.password = password;
     this.category = category; // 'buyer' or 'seller'
-    // Add more fields as needed
   }
 
   async save() {
@@ -17,7 +16,6 @@ class User {
     const insertionResult = await users.insertOne(this);
   
     if (insertionResult.acknowledged) {
-      // The insertion was acknowledged, so we find the user by email
       const insertedUser = await users.findOne({ email: this.email });
       return insertedUser;
     } else {
@@ -33,7 +31,6 @@ class User {
     return user;
   }
 
-  // Find a user by email
   static async findByEmail(email) {
     const db = await connectToDatabase();
     const users = db.collection('users');
@@ -42,7 +39,6 @@ class User {
     return user;
   }
 
-  // Add more query methods as needed
 }
 
 module.exports = User;

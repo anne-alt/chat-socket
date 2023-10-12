@@ -8,7 +8,6 @@ class Product {
     this.price = price;
     this.sellerId = new ObjectId(sellerId); // This references the user _id
     this.creationDate = new Date();
-    // Add more fields as needed
   }
 
   async save() {
@@ -18,7 +17,6 @@ class Product {
     const insertionResult = await products.insertOne(this);
   
     if (insertionResult.acknowledged) {
-      // The insertion was acknowledged, so we find the product by the combination of name and sellerId
       const insertedProduct = await products.findOne({ name: this.name, sellerId: this.sellerId });
       return insertedProduct;
     } else {
@@ -34,7 +32,6 @@ class Product {
     return product;
   }
 
-  // Add more query methods as needed
 }
 
 module.exports = Product;

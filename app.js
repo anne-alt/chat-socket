@@ -43,7 +43,7 @@ app.post('/signup', async (req, res) => {
 
     res.status(201).json({ message: 'User registered successfully', user: newUser });
   } catch (error) {
-    console.error(error); // Log the error for debugging
+    console.error(error); 
     let errorMessage = error.message;
 
     if (error.message.includes('Validation failed')) {
@@ -67,7 +67,6 @@ app.post('/signin', async (req, res) => {
 
     if (passwordIsValid) {
 
-      // Create a JWT token
       const token = jwt.sign(
         {
           _id: user._id,
@@ -75,7 +74,7 @@ app.post('/signin', async (req, res) => {
           category: user.category,
         },
         jwt_secret,
-        { expiresIn: '1h' } // Token expires in 1 hour (adjust as needed)
+        { expiresIn: '1h' } // Token expires in 1 hour 
       );
 
       res.status(200).json({ message: 'Login successful', 
@@ -95,7 +94,6 @@ app.post('/signin', async (req, res) => {
   }
 });
 
-// Order model and routes (order.js)
 const orderRoutes = require('./routes/orders');
 app.use('/orders', orderRoutes);
 
