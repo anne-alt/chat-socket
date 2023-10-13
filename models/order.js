@@ -64,7 +64,15 @@ class Order {
     return allOrders;
   }
 
-  // Add more query methods as needed
+  static async findUserOrders(userId) {
+    const db = await connectToDatabase();
+    const orders = db.collection('orders');
+
+    const userOrders = await orders.find({ buyerId: new ObjectId(userId) }).toArray();
+
+    return userOrders;
+  }
+
 }
 
 module.exports = Order;

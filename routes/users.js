@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user'); 
+const Order = require('../models/order');
 
 // Create a new user
-router.post('/users', async (req, res) => {
+router.post('/new', async (req, res) => {
   const { email, category, username, password } = req.body;
   const user = new User( email, category, username, password);
 
@@ -16,7 +17,7 @@ router.post('/users', async (req, res) => {
 });
 
 // Get a user by ID
-router.get('/users/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
   const userId = req.params.id;
 
   try {
@@ -28,6 +29,18 @@ router.get('/users/:id', async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Error fetching the user' });
+  }
+});
+
+// Get user-specific orders
+router.get('/orders/user/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const userOrders = await Order.findUserOrders(userId);
+    res.json(userOrders);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching user orders' });
   }
 });
 

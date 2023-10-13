@@ -8,6 +8,8 @@ const socketIo = require('socket.io');
 const path = require('path');
 const PORT = process.env.PORT || 3000;
 const connectToDatabase = require('./database')
+const fetchUserOrder = require('./fetchUserOrder')
+const { ObjectId } = require('mongodb')
 const jwt_secret = process.env.JWT_SECRET
 
 const app = express();
@@ -15,21 +17,41 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 const User = require('./models/user')
+const Order = require('./models/order')
 
-// Set the views directory and view engine
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors())
+
+const corsOptions = {
+  origin: 'http://localhost:3001', 
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+// app.use(cors())
 
 app.use(express.json());
 
 // Render the index page
-app.get('/', (req, res) => {
+app.get('/landing', (req, res) => {
   res.render('index');
 });
+
+// Render the sign-up page
+app.get('/signup', (req, res) => {
+  res.render('signup');
+});
+
+// Render the sign-in page
+app.get('/signin', (req, res) => {
+  res.render('signin');
+});
+
 
 app.post('/signup', async (req, res) => {
   try {
@@ -97,18 +119,41 @@ app.post('/signin', async (req, res) => {
 const orderRoutes = require('./routes/orders');
 app.use('/orders', orderRoutes);
 
-// WebSocket handling
-io.on('connection', (socket) => {
-  console.log('A user connected');
+const userRoutes = require('./routes/users')
+app.use('/users', userRoutes)
 
-  socket.on('chat message', (message) => {
-    io.emit('chat message', message);
-  });
+// WebSocket handling
+io.on('connection', async (socket) => {
+  try {
+    console.log('A user connected');
+
+    const userId = socket.request.session.userId; 
+
+    const userOrder = await fetchUserOrder(userId); // Fetch the user's orders
+
+    if (userOrder.length === 0) {
+      socket.emit('notification', 'You have no running orders.');
+    } else {
+      userOrder.forEach(async (order) => {
+        const orderConfirmationStatus = order.confirmed;
+
+        // Emit an order confirmation notification based on the status
+        if (!orderConfirmationStatus) {
+          socket.emit('notification', 'Your order is pending.');
+        } else {
+          socket.emit('notification', 'Your order has been confirmed.');
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in WebSocket connection:', error);
+  }
 
   socket.on('disconnect', () => {
     console.log('A user disconnected');
   });
 });
+
 
 connectToDatabase()
     .then(() => {
