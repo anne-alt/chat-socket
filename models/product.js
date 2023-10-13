@@ -28,7 +28,7 @@ class Product {
     const db = await connectToDatabase();
     const products = db.collection('products');
 
-    const product = await products.findOne({ _id: new ObjectID(productId) });
+    const product = await products.findOne({ _id: new ObjectId(productId) });
     return product;
   }
 
