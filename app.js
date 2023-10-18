@@ -18,6 +18,7 @@ const io = socketIo(server);
 
 const User = require('./models/user')
 const Order = require('./models/order')
+const Product = require('./models/product');
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -103,7 +104,7 @@ app.post('/signin', async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        roles: user.roles,
+        category: user.category,
         accessToken: token,
       });
 
@@ -127,23 +128,50 @@ io.on('connection', async (socket) => {
   try {
     console.log('A user connected');
 
-    const userId = socket.request.session.userId; 
+    const userId = socket.request.session.userId;
+    const userCategory = socket.request.session.category; // Use "category" instead of "role"
 
-    const userOrder = await fetchUserOrder(userId); // Fetch the user's orders
+    if (userCategory === 'buyer') {
+      const buyerOrders = await fetchUserOrders(userId, 'buyer'); // Fetch the buyer's orders
 
-    if (userOrder.length === 0) {
-      socket.emit('notification', 'You have no running orders.');
-    } else {
-      userOrder.forEach(async (order) => {
-        const orderConfirmationStatus = order.confirmed;
+      if (buyerOrders.length === 0) {
+        socket.emit('notification', 'You have no running orders.');
+      } else {
+        for (const order of buyerOrders) {
+          const orderConfirmationStatus = order.confirmed;
 
-        // Emit an order confirmation notification based on the status
-        if (!orderConfirmationStatus) {
-          socket.emit('notification', 'Your order is pending.');
-        } else {
-          socket.emit('notification', 'Your order has been confirmed.');
+          // Emit an order confirmation notification based on the status
+          if (!orderConfirmationStatus) {
+            socket.emit('notification', 'Your order is pending.');
+          } else {
+            socket.emit('notification', 'Your order has been confirmed.');
+          }
         }
-      });
+      }
+    } else if (userCategory === 'seller') {
+      const sellerOrders = await fetchUserOrders(userId, 'seller'); // Fetch the seller's orders
+
+      for (const order of sellerOrders) {
+        for (const product of order.products) {
+          const sellerId = product.sellerId;
+          const productId = product.productId;
+          const productQuantity = product.quantity;
+
+          const productData = await Product.findProductById(productId); // Fetch product details
+
+          if (productData) {
+            const productName = productData.name; 
+
+            const sellerSocket = io.sockets.connected[sellerId]; // Fetch the seller's socket connection
+            if (sellerSocket) {
+              sellerSocket.emit(
+                'notification',
+                `Your product ${productName} has been ordered. Quantity: ${productQuantity}`
+              );
+            }
+          }
+        }
+      }
     }
   } catch (error) {
     console.error('Error in WebSocket connection:', error);
@@ -153,6 +181,8 @@ io.on('connection', async (socket) => {
     console.log('A user disconnected');
   });
 });
+
+
 
 
 connectToDatabase()

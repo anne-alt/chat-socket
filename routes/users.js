@@ -28,7 +28,7 @@ router.get('/:id', async (req, res) => {
       res.status(404).json({ error: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching the user' });
+    res.status(500).json({ error: error.message });
   }
 });
 

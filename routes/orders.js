@@ -4,8 +4,8 @@ const Order = require('../models/order');
 
 // Create a new order
 router.post('/new', async (req, res) => {
-  const { buyerId, products } = req.body;
-  const order = new Order(buyerId, products);
+  const { buyerId, products, buyerName, productName } = req.body;
+  const order = new Order(buyerId, products, buyerName, productName);
 
   try {
     const newOrder = await order.save();
@@ -65,12 +65,12 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Get all orders
-router.get('/all', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const allOrders = await Order.findAllOrders();
-    res.json(allOrders);
+    res.status(200).json(allOrders);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching all orders' });
+    res.status(500).json({ error: error.message });
   }
 });
 

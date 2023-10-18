@@ -2,15 +2,17 @@ const { ObjectId } = require('mongodb');
 const connectToDatabase = require('../database');
 
 class Order {
-  constructor(buyerId, products) {
+  constructor(buyerId, products, buyerName, productName) {
     this.buyerId = new ObjectId(buyerId);
     this.products = products.map((product) => ({
       productId: new ObjectId(product.productId),
       quantity: product.quantity,
       sellerId: new ObjectId(product.sellerId),
+      productName: product.productName
     }));
     this.orderDate = new Date();
     this.confirmed = false;
+    this.buyerName = buyerName;
   }
 
   async save() {

@@ -3,6 +3,7 @@ const { ObjectId } = require('mongodb');
 const connectToDatabase = require('./database');
 const User = require('./models/user');
 const Product = require('./models/product');
+const bcrypt = require('bcrypt');
 
 const generateRandomData = async () => {
   const db = await connectToDatabase();
@@ -14,9 +15,9 @@ const generateRandomData = async () => {
   for (let i = 0; i < 10; i++) {
     const email = faker.internet.email();
     const username = faker.internet.userName();
-    const password = username;
+    const password = await bcrypt.hash(username, 10); // Encrypt the password
     const category = i % 2 === 0 ? 'seller' : 'buyer'; // Alternates between seller and buyer
-    const newUser = new User( email, username, password, category);
+    const newUser = new User(email, username, password, category);
     sampleUsers.push(await newUser.save());
   }
 
@@ -26,7 +27,7 @@ const generateRandomData = async () => {
     const name = faker.commerce.productName();
     const description = faker.lorem.sentence();
     const price = faker.commerce.price();
-    const seller = sampleUsers[Math.floor(Math.random() * sampleUsers.length)];
+    const seller = sampleUsers.find((user) => user.category === 'seller'); // Find a valid seller
     const newProduct = new Product(name, description, price, seller._id);
     sampleProducts.push(await newProduct.save());
   }

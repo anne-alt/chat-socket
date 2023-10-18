@@ -1,4 +1,4 @@
-const { ObjectID } = require('mongodb');
+const { ObjectId } = require('mongodb');
 const connectToDatabase = require('../database');
 
 class User {
@@ -27,7 +27,7 @@ class User {
     const db = await connectToDatabase();
     const users = db.collection('users');
 
-    const user = await users.findOne({ _id: new ObjectID(userId) });
+    const user = await users.findOne({ _id: new ObjectId(userId) });
     return user;
   }
 
